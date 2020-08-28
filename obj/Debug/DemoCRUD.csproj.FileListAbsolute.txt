@@ -177,3 +177,4 @@ C:\Users\marco\source\repos\DemoCRUD\obj\Debug\DemoCRUD.csprojAssemblyReference.
 C:\Users\marco\source\repos\DemoCRUD\obj\Debug\DemoCRUD.csproj.CopyComplete
 C:\Users\marco\source\repos\DemoCRUD\obj\Debug\DemoCRUD.dll
 C:\Users\marco\source\repos\DemoCRUD\obj\Debug\DemoCRUD.pdb
+C:\Users\marco\source\repos\DemoCRUD\bin\System.Linq.Dynamic.dll

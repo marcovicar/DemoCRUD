@@ -6,7 +6,7 @@
 <h2>Index</h2>
 
 <p>
-    <a href="@Url.Action("Create")" class="btn btn-success">
+    <a href="#" class="btn btn-success" data-action="Create">
         <span class="glyphicon glyphicon-plus"></span>
         Novo Livro
     </a>
@@ -16,28 +16,86 @@
 <table id="gridDados">
     <thead>
         <tr>
-            <th data-column-id="Titulo">Título</th>
+            <th data-column-id="Titulo" data-order="asc">Título</th>
             <th data-column-id="Autor">Autor</th>
             <th data-column-id="AnoEdicao">Ano da Edição</th>
             <th data-column-id="Valor">Valor</th>
+            <th data-formatter="acoes"></th>
         </tr>
     </thead>
 </table>
 
+<!-- Modal -->
+<div class="modal fade" id="minhaModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div id="conteudoModal"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Fim Modal -->
+
 @section scripts{
     <script src="~/Scripts/jquery.bootgrid.js"></script>
     <script type="text/javascript">
+
+        var controller = "Livros";
+
         $(document).ready(configurarControles);
 
         function configurarControles() {
 
+            var traducao = {
+                infos: "Exibindo {{ctx.start}} até {{ctx.end}} de {{ctx.total}} registros",
+                loading: "Carregando, isso pode levar alguns segundos...",
+                noResults: "Não foram encontrados dados",
+                refresh: "Atualizar",
+                search: "Pesquisar"
+            };
+
             $("#gridDados").bootgrid(
                 {
                     ajax: true,
-                    url: "@Url.Action("Listar")"
+                    url: "@Url.Action("Listar")",
+                    labels: traducao,
+                    searchSettings: {
+                        characters: 4
+                    },
+                    formatters: {
+                        "acoes": function (column, row) {
+
+                            return "<a href='#' class='btn btn-info'><span class='glyphicon glyphicon-list'></span></a> " +
+                                   "<a href='#' class='btn btn-warning'><span class='glyphicon glyphicon-edit'></span></a> " +
+                                   "<a href='#' class='btn btn-danger'><span class='glyphicon glyphicon-trash'></span></a>"
+                        }
+                    }
                 });
+            $("a.btn").click(function () {
+                var acao = $(this).data("action");
+                abrirModal(acao);
+            });
         }
 
+        function abrirModal(acao, parametro) {
+
+            var url = "/{ctrl}/{acao}/{parametro}";
+
+            url = url.replace("{ctrl}", controller);
+            url = url.replace("{acao}", acao);
+
+            if (parametro != null) {
+                url = url.replace("{parametro}", parametro);
+            }
+            else {
+                url = url.replace("{parametro}", "");
+            }
+
+            $("#conteudoModal").load(url, function () {
+                $("#minhaModal").modal('show');
+            });
+        }
 
     </script>
 }

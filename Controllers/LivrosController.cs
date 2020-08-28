@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
 using System.Linq;
+using System.Linq.Dynamic;
 using System.Net;
 using System.Web;
 using System.Web.Mvc;
@@ -21,38 +22,36 @@ namespace DemoCRUD.Controllers
             return View();
         }
 
-        public JsonResult Listar(Livro livro, int pagina = 1, int registros = 5)
+        public JsonResult Listar(string searchPhrase, int current = 1, int rowCount = 5)
         {
+            string chave = Request.Form.AllKeys.Where(k => k.StartsWith("sort")).First();
+
+            string ordenacao = Request[chave];
+            string campo = chave.Replace("sort[", String.Empty).Replace("]", String.Empty);
+
             var livros = db.Livros.Include(l => l.Genero);
 
             int total = livros.Count();
 
-            if (!String.IsNullOrWhiteSpace(livro.Titulo))
+            if (!String.IsNullOrWhiteSpace(searchPhrase))
             {
-                livros = livros.Where(l => l.Titulo.Contains(livro.Titulo));
+                int ano = 0;
+                int.TryParse(searchPhrase, out ano);
+
+                decimal valor = 0.0m;
+                decimal.TryParse(searchPhrase, out valor);
+
+                livros = livros.Where("Titulo.Contains(@0) OR Autor.Contains(@0) OR AnoEdicao == @1 OR Valor= @2", searchPhrase, ano, valor);
             }
 
-            if (!String.IsNullOrWhiteSpace(livro.Autor))
-            {
-                livros = livros.Where(l => l.Autor.Contains(livro.Autor));
-            }
+            string campoOrdenacao = String.Format("{0} {1}", campo, ordenacao);
 
-            if (livro.AnoEdicao != 0)
-            {
-                livros = livros.Where(l => l.AnoEdicao == livro.AnoEdicao);
-            }
-
-            if (livro.Valor != decimal.Zero)
-            {
-                livros = livros.Where(l => l.Valor == livro.Valor);
-            }
-
-            var livrosPaginados = livros.OrderBy(l => l.Titulo).Skip((pagina - 1) * registros).Take(registros);
+            var livrosPaginados = livros.OrderBy(campoOrdenacao).Skip((current - 1) * rowCount).Take(rowCount);
 
             return Json(new {
                                 rows = livrosPaginados.ToList(),
-                                current = pagina,
-                                rowCount = registros,
+                                current = current,
+                                rowCount = rowCount,
                                 total = total
                              }
                              , JsonRequestBehavior.AllowGet); ;
@@ -79,7 +78,7 @@ namespace DemoCRUD.Controllers
         public ActionResult Create()
         {
             ViewBag.GeneroId = new SelectList(db.Generos, "Id", "Nome");
-            return View();
+            return PartialView();
         }
 
         // POST: Livros/Create
