@@ -55,7 +55,7 @@
                 search: "Pesquisar"
             };
 
-            $("#gridDados").bootgrid(
+            var grid = $("#gridDados").bootgrid(
                 {
                     ajax: true,
                     url: "@Url.Action("Listar")",
@@ -66,12 +66,35 @@
                     formatters: {
                         "acoes": function (column, row) {
 
-                            return "<a href='#' class='btn btn-info'><span class='glyphicon glyphicon-list'></span></a> " +
-                                   "<a href='#' class='btn btn-warning'><span class='glyphicon glyphicon-edit'></span></a> " +
-                                   "<a href='#' class='btn btn-danger'><span class='glyphicon glyphicon-trash'></span></a>"
+                            return "<a href='#' class='btn btn-info' data-acao='Details' data-row-id='" + row.Id + "'>" +
+                                "<span class='glyphicon glyphicon-list'></span></a> " +
+                                "<a href='#' class='btn btn-warning' data-acao='Edit' data-row-id='" + row.Id + "'>" +
+                                "<span class='glyphicon glyphicon-edit'></span>" +
+                                "</a> " +
+                                "<a href='#' class='btn btn-danger' data-acao='Delete' data-row-id='" + row.Id + "'>" +
+                                "<span class='glyphicon glyphicon-trash'></span></a>";
                         }
                     }
                 });
+
+            grid.on("loaded.rs.jquery.bootgrid", function () {
+
+                grid.find("a.btn").each(function (index, elemento) {
+
+                    var botaoDeAcao = $(elemento);
+
+                    var acao = botaoDeAcao.data("acao");
+                    var idEntidade = botaoDeAcao.data("row-id");
+
+                    botaoDeAcao.on("click", function () {
+
+                        abrirModal(acao, idEntidade);
+
+                    });
+                });
+            });
+
+
             $("a.btn").click(function () {
                 var acao = $(this).data("action");
                 abrirModal(acao);
