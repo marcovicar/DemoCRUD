@@ -86,17 +86,22 @@ namespace DemoCRUD.Controllers
         // obter mais detalhes, consulte https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Id,Titulo,Autor,AnoEdicao,Valor,GeneroId")] Livro livro)
+        public JsonResult Create([Bind(Include = "Id,Titulo,Autor,AnoEdicao,Valor,GeneroId")] Livro livro)
         {
             if (ModelState.IsValid)
             {
                 db.Livros.Add(livro);
                 db.SaveChanges();
-                return RedirectToAction("Index");
+
+                return Json(new { resultado = true, mensagem = "Livro cadastrado com sucesso!" });
+            }
+            else
+            {
+                IEnumerable<ModelError> erros = ModelState.Values.SelectMany(item => item.Errors);
+
+                return Json(new { resultado = false, mensagem = erros });
             }
 
-            ViewBag.GeneroId = new SelectList(db.Generos, "Id", "Nome", livro.GeneroId);
-            return View(livro);
         }
 
         // GET: Livros/Edit/5
